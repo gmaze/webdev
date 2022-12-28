@@ -92,33 +92,37 @@
         //     const myInterval = setInterval(update_CountDown, 1000);
         // }
 
+        function get_bs_color(val){
+            let colors = {};
+            colors[2] = {'value': 10, 'label': 'secondary'}
+            colors[1] = {'value': 5, 'label': 'warning'}
+            colors[0] = {'value': 0, 'label': 'danger'}
+            let label = null;
+            for (interval in colors){
+                if (val >= colors[interval]['value']){
+                    label = colors[interval]['label']
+                }
+            }
+            return label
+        }
+
         function a_time_counter(){
             // Create a time counter
             function myCountDown(){
                 let now = new Date();
-                // let dt_full = counter_end - counter_start;
-                // let dt_elapsed = now - counter_start; // elapsed time in ms
                 let dt_remaining = counter_end - now; // time in ms to the end
-                let newprogress = Math.round(100-(dt_remaining/1000)*100/delay);
-                $('.progress-bar').attr('aria-valuenow', newprogress).css('width', newprogress + '%');
+                let dt_sec = dt_remaining/1000
+                let newprogress = Math.round(100-dt_sec*100/delay);
+                $('.progress-bar').attr('aria-valuenow', newprogress).css('width', newprogress + '%');                
                 if (dt_remaining < 0){
                     clearInterval(myInterval);
-                    $('#countdown').html('Time elapsed !').removeClass('text-secondary').removeClass('text-warning');
-                    $('#progressbar').removeClass('bg-secondary').removeClass('bg-warning');
+                    $('#countdown').html('Time elapsed !')
                     $('#progressbar').removeClass('progress-bar-striped progress-bar-animated');
-                    $('#start_counter').prop("disabled",false);
+                    $('#start_counter').prop("disabled", false);
                 } else {
                     $('#countdown').html(dt_strftime(dt_remaining));
-                    if (dt_remaining/1000 > 10){
-                        $('#countdown').removeClass('text-danger').addClass('text-secondary');
-                        $('#progressbar').removeClass('bg-danger').addClass('bg-secondary');
-                    } else if (dt_remaining/1000 > 5){
-                        $('#countdown').removeClass('text-secondary').addClass('text-warning');
-                        $('#progressbar').removeClass('bg-secondary').addClass('bg-warning');
-                    } else if (dt_remaining/1000 > 0){
-                        $('#countdown').removeClass('text-warning').addClass('text-danger');
-                        $('#progressbar').removeClass('bg-warning').addClass('bg-danger');
-                    }
+                    $('#countdown').removeClass_bs_colors().addClass('text-'+get_bs_color(dt_sec));
+                    $('#progressbar').removeClass_bs_colors().addClass('bg-'+get_bs_color(dt_sec));
                 }
             }
             const counter_start = new Date();
@@ -139,6 +143,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.bundle.min.js" integrity="sha512-i9cEfJwUwViEPFKdC1enz4ZRGBj8YQo6QByFTF92YXHi7waCqyexvRD75S5NVTsSiTv7rKWqG9Y5eFxmRsOn0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         (function () {
+
+            $.fn.extend({
+            removeClass_bs_colors: function() {
+                return this.each(function() {
+                    let cl_list = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark']
+                    for (icl in cl_list){
+                        $(this).removeClass("text-" + cl_list[icl]);
+                        $(this).removeClass("bg-" + cl_list[icl]);
+                        $(this).removeClass("alert-" + cl_list[icl]);
+                    }
+                });
+            }
+        });
 
         })()
         
