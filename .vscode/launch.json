@@ -4,12 +4,35 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Open navtabs index.html",
-            "file": "/Users/gmaze/git/github/gmaze/webdev/examples/navtabs/index.html"
+            "name": "Open jq-tabs",
+            "file": "/Users/gmaze/git/github/gmaze/webdev/examples/jq-tabs/index.html"
         },
+
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Open bs-nav",
+            "file": "/Users/gmaze/git/github/gmaze/webdev/examples/bs-nav/index.html"
+        },
+
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Open bs-sidebar",
+            "file": "/Users/gmaze/git/github/gmaze/webdev/examples/bs-sidebar/index.html"
+        },
+
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Open jq-counter",
+            "file": "/Users/gmaze/git/github/gmaze/webdev/examples/jq-timer/index.html"
+        },
+
         {
             "name": "Python: Open Flask app",
             "type": "python",
