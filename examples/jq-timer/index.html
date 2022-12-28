@@ -11,41 +11,124 @@
         
         <form>
             <div class="form-group">
-            <label for="exampleInput">Seconds to count down</label>
-            <input type="text" class="form-control" id="exampleInput" placeholder="60 seconds" value="10">
+            <label for="exampleInput">Seconds to count down:</label>
+            <input type="text" class="form-control" id="exampleInput" placeholder="60 seconds" value="15">
             </div>
         </form>
 
-        <p>Start: <span id="countdown_start">?</span></p>
-        <p>End: <span id="countdown_end">?</span></p>
-        <p>Remaining time: <span id="countdown">?</span></p>
-        <button class="btn btn-primary" onclick="a_time_counter()">Start time counter</button>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" id="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        
+        <p>Start: <span id="countdown_start" class='text-secondary'>?</span></p>
+        <p>End: <span id="countdown_end" class='text-secondary'>?</span></p>
+        <p>Remaining time: <span id="countdown">-</span></p>
+
+        <button class="btn btn-primary" id="start_counter" onclick="a_time_counter()">Start time counter</button>
+        <!-- <button class="btn btn-primary" onclick="another_time_counter()">Start another time counter</button> -->
 
     </div>
 
     <script>
 
         function dt_strftime(dt) {
-            let days =  Math.floor(dt / (1000*60*60*24)).toString().padStart(2, '0');
+            let days =  Math.floor(dt / (1000*60*60*24)).toString().padStart(2, '0')
             let hours =  Math.floor(dt / (1000*60*60)).toString().padStart(2, '0')
             let mins =  Math.floor(dt / (1000*60)).toString().padStart(2, '0')
             let secs =  Math.floor(dt / (1000)).toString().padStart(2, '0')
             return days + "d " + hours + "H" + mins + ":" + secs
         }
 
+        // function init_countdown(){
+        //     if (localStorage.getItem('game_countdown_start') == null){
+        //         counter_start = new Date();
+        //         localStorage.setItem('game_countdown_start', counter_start);
+        //     } else {
+        //         counter_start = new Date(localStorage.getItem('game_countdown_start'));
+        //     }
+        //     if (localStorage.getItem('game_countdown_delay') == null){
+        //         counter_delay = Math.floor($('#exampleInput').val());
+        //         localStorage.setItem('game_countdown_delay', counter_delay);
+        //     } else {
+        //         counter_delay = Math.floor(localStorage.getItem('game_countdown_delay'))
+        //     }
+        //     data = Array(counter_start, counter_start+1e3*counter_delay, counter_delay)
+        //     $('#countdown_start').html(data[0]);
+        //     $('#countdown_end').html(data[1]);
+        //     return data
+        // }
+
+        // function info_countdown(){
+        //     if (localStorage.getItem('game_countdown_start') == null){
+        //         counter_start = null;
+        //     } else {
+        //         counter_start = new Date(localStorage.getItem('game_countdown_start'));
+        //     }
+        //     if (localStorage.getItem('game_countdown_delay') == null){
+        //         counter_delay = null;
+        //     } else {
+        //         counter_delay = Math.floor(localStorage.getItem('game_countdown_delay'))
+        //     }
+        //     data = Array(counter_start, counter_start+1e3*counter_delay, counter_delay)
+        //     $('#countdown_start').html(data[0]);
+        //     $('#countdown_end').html(data[1]);
+        //     return data
+        // }
+
+        // function update_CountDown(){
+        //     data = info_countdown();
+        //     let now = new Date();
+        //     // let dt_elapsed = now - counter_start; // elapsed time in ms
+        //     // let dt_remaining = counter_end - now; // time in ms to the end
+        //     // let dt_elapsed = now - data[0]; // elapsed time in ms
+        //     let dt_remaining = data[1] - now; // time in ms to the end
+        //     $('#countdown').html(dt_strftime(dt_remaining));
+        // }
+
+        // function another_time_counter(){
+        //     let data = init_countdown();
+        //     // $('#countdown_start').html(data[0]);
+        //     // $('#countdown_end').html(data[1]);
+        //     const myInterval = setInterval(update_CountDown, 1000);
+        // }
+
         function a_time_counter(){
             // Create a time counter
             function myCountDown(){
                 let now = new Date();
-                let dt_elapsed = now - counter_start; // elapsed time in ms
+                // let dt_full = counter_end - counter_start;
+                // let dt_elapsed = now - counter_start; // elapsed time in ms
                 let dt_remaining = counter_end - now; // time in ms to the end
-                $('#countdown').html(dt_strftime(dt_remaining));
+                let newprogress = Math.round(100-(dt_remaining/1000)*100/delay);
+                $('.progress-bar').attr('aria-valuenow', newprogress).css('width', newprogress + '%');
+                if (dt_remaining < 0){
+                    clearInterval(myInterval);
+                    $('#countdown').html('Time elapsed !').removeClass('text-secondary').removeClass('text-warning');
+                    $('#progressbar').removeClass('bg-secondary').removeClass('bg-warning');
+                    $('#progressbar').removeClass('progress-bar-striped progress-bar-animated');
+                    $('#start_counter').prop("disabled",false);
+                } else {
+                    $('#countdown').html(dt_strftime(dt_remaining));
+                    if (dt_remaining/1000 > 10){
+                        $('#countdown').removeClass('text-danger').addClass('text-secondary');
+                        $('#progressbar').removeClass('bg-danger').addClass('bg-secondary');
+                    } else if (dt_remaining/1000 > 5){
+                        $('#countdown').removeClass('text-secondary').addClass('text-warning');
+                        $('#progressbar').removeClass('bg-secondary').addClass('bg-warning');
+                    } else if (dt_remaining/1000 > 0){
+                        $('#countdown').removeClass('text-warning').addClass('text-danger');
+                        $('#progressbar').removeClass('bg-warning').addClass('bg-danger');
+                    }
+                }
             }
             const counter_start = new Date();
-            const counter_end = counter_start.getTime() + 10*1e3;
+            const delay = Math.round($('#exampleInput').val());
+            const counter_end = counter_start.getTime() + delay*1e3;
             $('#countdown_start').html(counter_start);
             $('#countdown_end').html(new Date(counter_end));
-            const myInterval = setInterval(myCountDown, 1000);
+            $('#start_counter').prop("disabled",true);
+            $('#progressbar').addClass('progress-bar-striped progress-bar-animated');
+            const myInterval = setInterval(myCountDown, 0);
         }
     </script>
 
@@ -54,6 +137,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.bundle.min.js" integrity="sha512-i9cEfJwUwViEPFKdC1enz4ZRGBj8YQo6QByFTF92YXHi7waCqyexvRD75S5NVTsSiTv7rKWqG9Y5eFxmRsOn0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
+    <script>
+        (function () {
+
+        })()
+        
+    </script>
 </body>
 </html>
