@@ -12,11 +12,11 @@
         <form>
             <div class="form-group">
             <label for="exampleInput">Seconds to count down:</label>
-            <input type="text" class="form-control" id="exampleInput" placeholder="60 seconds" value="15">
+            <input type="text" class="form-control" id="exampleInput" placeholder="60 seconds" value="14">
             </div>
         </form>
 
-        <div class="progress">
+        <div class="progress" style="height: 20px;">
             <div class="progress-bar" role="progressbar" id="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
         
@@ -24,19 +24,22 @@
         <p>End: <span id="countdown_end" class='text-secondary'>?</span></p>
         <p>Remaining time: <span id="countdown">-</span></p>
 
-        <button class="btn btn-primary" id="start_counter" onclick="a_time_counter()">Start time counter</button>
-        <!-- <button class="btn btn-primary" onclick="another_time_counter()">Start another time counter</button> -->
+        <button class="btn btn-primary" id="start_counter" onclick="a_time_counter()">Start a regular time counter</button>
+        <!-- <button class="btn btn-primary" onclick="another_time_counter()">Start a persistant time counter</button> -->
 
     </div>
 
     <script>
 
         function dt_strftime(dt) {
-            let days =  Math.floor(dt / (1000*60*60*24)).toString().padStart(2, '0')
-            let hours =  Math.floor(dt / (1000*60*60)).toString().padStart(2, '0')
-            let mins =  Math.floor(dt / (1000*60)).toString().padStart(2, '0')
-            let secs =  Math.floor(dt / (1000)).toString().padStart(2, '0')
+            // dt is in ms
+            let dts = dt/1000 // dt in seconds
+            let days = Math.trunc(dts / (60*60*24)).toString().padStart(2, '0')
+            let hours = Math.trunc(dts / (60*60) - days*24).toString().padStart(2, '0')
+            let mins = Math.trunc(dts / 60 - hours*60 - days*60*24).toString().padStart(2, '0')
+            let secs = Math.trunc(dts - mins*60 - hours*60*60 - days*60*60*24).toString().padStart(2, '0')
             return days + "d " + hours + "H" + mins + ":" + secs
+            // return hours + "H" + mins + ":" + secs
         }
 
         // function init_countdown(){
@@ -93,8 +96,12 @@
         // }
 
         function get_bs_color(val){
+            // Return a color for a value, given a pre-defined scale
+            // eg: if 5 <= val < 10, return 'primary'
             let colors = {};
-            colors[2] = {'value': 10, 'label': 'secondary'}
+            // colors[4] = {'value': 60, 'label': 'secondary'}
+            colors[3] = {'value': 20, 'label': 'secondary'}
+            colors[2] = {'value': 10, 'label': 'primary'}
             colors[1] = {'value': 5, 'label': 'warning'}
             colors[0] = {'value': 0, 'label': 'danger'}
             let label = null;
@@ -108,14 +115,15 @@
 
         function a_time_counter(){
             // Create a time counter
-            function myCountDown(){
+            function CountDown(){
                 let now = new Date();
                 let dt_remaining = counter_end - now; // time in ms to the end
                 let dt_sec = dt_remaining/1000
-                let newprogress = Math.round(100-dt_sec*100/delay);
-                $('.progress-bar').attr('aria-valuenow', newprogress).css('width', newprogress + '%');                
+                // let progress = Math.round((100-dt_sec*100/delay)*10)/10;
+                let progress = Math.round( (dt_sec*100/delay)*10 )/10;
+                $('.progress-bar').attr('aria-valuenow', progress).css('width', progress + '%');                
                 if (dt_remaining < 0){
-                    clearInterval(myInterval);
+                    clearInterval(aCountDown);
                     $('#countdown').html('Time elapsed !')
                     $('#progressbar').removeClass('progress-bar-striped progress-bar-animated');
                     $('#start_counter').prop("disabled", false);
@@ -123,16 +131,17 @@
                     $('#countdown').html(dt_strftime(dt_remaining));
                     $('#countdown').removeClass_bs_colors().addClass('text-'+get_bs_color(dt_sec));
                     $('#progressbar').removeClass_bs_colors().addClass('bg-'+get_bs_color(dt_sec));
+                    // $('#progressbar').html(dt_strftime(dt_remaining));
                 }
             }
-            const counter_start = new Date();
             const delay = Math.round($('#exampleInput').val());
+            const counter_start = new Date();
             const counter_end = counter_start.getTime() + delay*1e3;
+            const aCountDown = setInterval(CountDown, 0);
             $('#countdown_start').html(counter_start);
             $('#countdown_end').html(new Date(counter_end));
             $('#start_counter').prop("disabled",true);
             $('#progressbar').addClass('progress-bar-striped progress-bar-animated');
-            const myInterval = setInterval(myCountDown, 0);
         }
     </script>
 
