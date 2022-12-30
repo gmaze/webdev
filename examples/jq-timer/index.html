@@ -25,7 +25,7 @@
         <p>Remaining time: <span id="countdown">-</span></p>
 
         <button class="btn btn-primary" id="start_counter" onclick="a_time_counter()">Start a regular time counter</button>
-        <!-- <button class="btn btn-primary" onclick="another_time_counter()">Start a persistant time counter</button> -->
+        <button class="btn btn-secondary" id="start_crobust_ounter"  onclick="a_robust_time_counter()">Start a persistant time counter</button>
 
     </div>
 
@@ -42,58 +42,24 @@
             // return hours + "H" + mins + ":" + secs
         }
 
-        // function init_countdown(){
-        //     if (localStorage.getItem('game_countdown_start') == null){
-        //         counter_start = new Date();
-        //         localStorage.setItem('game_countdown_start', counter_start);
-        //     } else {
-        //         counter_start = new Date(localStorage.getItem('game_countdown_start'));
-        //     }
-        //     if (localStorage.getItem('game_countdown_delay') == null){
-        //         counter_delay = Math.floor($('#exampleInput').val());
-        //         localStorage.setItem('game_countdown_delay', counter_delay);
-        //     } else {
-        //         counter_delay = Math.floor(localStorage.getItem('game_countdown_delay'))
-        //     }
-        //     data = Array(counter_start, counter_start+1e3*counter_delay, counter_delay)
-        //     $('#countdown_start').html(data[0]);
-        //     $('#countdown_end').html(data[1]);
-        //     return data
-        // }
+        function save_countdown(counter_start, counter_delay){
+            localStorage.setItem('game_countdown_start', counter_start);
+            localStorage.setItem('game_countdown_delay', counter_delay);
+        }
 
-        // function info_countdown(){
-        //     if (localStorage.getItem('game_countdown_start') == null){
-        //         counter_start = null;
-        //     } else {
-        //         counter_start = new Date(localStorage.getItem('game_countdown_start'));
-        //     }
-        //     if (localStorage.getItem('game_countdown_delay') == null){
-        //         counter_delay = null;
-        //     } else {
-        //         counter_delay = Math.floor(localStorage.getItem('game_countdown_delay'))
-        //     }
-        //     data = Array(counter_start, counter_start+1e3*counter_delay, counter_delay)
-        //     $('#countdown_start').html(data[0]);
-        //     $('#countdown_end').html(data[1]);
-        //     return data
-        // }
+        function load_countdown(){
+            let counter_start = new Date(localStorage.getItem('game_countdown_start'));
+            let counter_delay = Math.abs(localStorage.getItem('game_countdown_delay'));
+            return [counter_start, counter_delay]
+        }
 
-        // function update_CountDown(){
-        //     data = info_countdown();
-        //     let now = new Date();
-        //     // let dt_elapsed = now - counter_start; // elapsed time in ms
-        //     // let dt_remaining = counter_end - now; // time in ms to the end
-        //     // let dt_elapsed = now - data[0]; // elapsed time in ms
-        //     let dt_remaining = data[1] - now; // time in ms to the end
-        //     $('#countdown').html(dt_strftime(dt_remaining));
-        // }
-
-        // function another_time_counter(){
-        //     let data = init_countdown();
-        //     // $('#countdown_start').html(data[0]);
-        //     // $('#countdown_end').html(data[1]);
-        //     const myInterval = setInterval(update_CountDown, 1000);
-        // }
+        function is_countdown_elapsed(){
+            let data = load_countdown();
+            let counter_end = data[0].getTime() + data[1]*1e3;
+            let now = new Date();
+            console.log('end at:' + new Date(counter_end));
+            return now > counter_end
+        }
 
         function get_bs_color(val){
             // Return a color for a value, given a pre-defined scale
@@ -123,7 +89,7 @@
                 let progress = Math.round( (dt_sec*100/delay)*10 )/10;
                 $('.progress-bar').attr('aria-valuenow', progress).css('width', progress + '%');                
                 if (dt_remaining < 0){
-                    clearInterval(aCountDown);
+                    clearInterval(a_CountDown);
                     $('#countdown').html('Time elapsed !')
                     $('#progressbar').removeClass('progress-bar-striped progress-bar-animated');
                     $('#start_counter').prop("disabled", false);
@@ -137,12 +103,58 @@
             const delay = Math.round($('#exampleInput').val());
             const counter_start = new Date();
             const counter_end = counter_start.getTime() + delay*1e3;
-            const aCountDown = setInterval(CountDown, 0);
+            const a_CountDown = setInterval(CountDown, 0);
             $('#countdown_start').html(counter_start);
             $('#countdown_end').html(new Date(counter_end));
             $('#start_counter').prop("disabled",true);
             $('#progressbar').addClass('progress-bar-striped progress-bar-animated');
         }
+
+
+        function a_robust_time_counter(){
+            // Create a time counter
+            function CountDown(){
+                let now = new Date();
+                let dt_remaining = counter_end - now; // time in ms to the end
+                let dt_sec = dt_remaining/1000
+                // let progress = Math.round((100-dt_sec*100/delay)*10)/10;
+                let progress = Math.round( (dt_sec*100/delay)*10 )/10;
+                $('.progress-bar').attr('aria-valuenow', progress).css('width', progress + '%');                
+                if (dt_remaining < 0){
+                    clearInterval(a_CountDown);
+                    $('#countdown').html('Time elapsed !')
+                    $('#progressbar').removeClass('progress-bar-striped progress-bar-animated');
+                    $('#start_robust_counter').prop("disabled", false);
+                } else {
+                    $('#countdown').html(dt_strftime(dt_remaining));
+                    $('#countdown').removeClass_bs_colors().addClass('text-'+get_bs_color(dt_sec));
+                    $('#progressbar').removeClass_bs_colors().addClass('bg-'+get_bs_color(dt_sec));
+                    // $('#progressbar').html(dt_strftime(dt_remaining));
+                }
+            }
+            if (!is_countdown_elapsed()){
+                let data = load_countdown();
+                console.log('resume existing counter')
+                console.log(data)
+                let counter_start = data[0]
+                let delay = data[1]
+            } else {
+                console.log('start a fresh counter')
+                let counter_start = new Date();
+                let delay = Math.round($('#exampleInput').val());
+                save_countdown(counter_start, delay);
+            }
+            const counter_end = counter_start.getTime() + delay*1e3;
+            const a_CountDown = setInterval(CountDown, 0);
+            $('#countdown_start').html(counter_start);
+            $('#countdown_end').html(new Date(counter_end));
+            $('#start_robust_counter').prop("disabled",true);
+            $('#progressbar').addClass('progress-bar-striped progress-bar-animated');
+        }
+
+
+
+
     </script>
 
     
@@ -152,6 +164,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.bundle.min.js" integrity="sha512-i9cEfJwUwViEPFKdC1enz4ZRGBj8YQo6QByFTF92YXHi7waCqyexvRD75S5NVTsSiTv7rKWqG9Y5eFxmRsOn0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         (function () {
+            console.log(is_countdown_elapsed());
 
             $.fn.extend({
             removeClass_bs_colors: function() {
